@@ -1,22 +1,27 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import Expense
 
-class UserRegisterSerializer(serializers.ModelSerializer):
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ("username", "email", "password")
+        fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
-        return User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data.get("email"),
-            password=validated_data["password"],
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password']
         )
+        return user
+
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = ("id", "amount", "description", "created_at")
+        # ← Explicitly list fields so 'user' is never required in the request body
+        fields = ['id', 'amount', 'description', 'category', 'date']
+        read_only_fields = ['id']
